@@ -26,9 +26,12 @@ EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 app = Flask(__name__)
 app.json.sort_keys = False
 
-# Keep CORS aligned with your React dev server
-_frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173").strip()
-CORS(app, resources={r"/api/*": {"origins": _frontend_origin}}, supports_credentials=True)
+# Keep CORS aligned with frontend origins (comma-separated supported).
+_frontend_origin_raw = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173").strip()
+_frontend_origins = [o.strip() for o in _frontend_origin_raw.split(",") if o.strip()]
+if not _frontend_origins:
+    _frontend_origins = ["http://localhost:5173"]
+CORS(app, resources={r"/api/*": {"origins": _frontend_origins}}, supports_credentials=True)
 
 
 def _get_db() -> AppDB:
